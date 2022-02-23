@@ -40,7 +40,7 @@ else
     private async Task Connect()
     {
         hubConenction = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri($"/chathub?username={username}"))
             .Build();
         hubConenction.On<string, string>("ReceiveMessage", (user, message) =>
         {
