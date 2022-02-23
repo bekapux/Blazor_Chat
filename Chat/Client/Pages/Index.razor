@@ -1,0 +1,42 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+
+
+
+@code{
+    private HubConnection? hubConenction;
+    private string messages = string.Empty;
+    private string username = string.Empty;
+    private string message = string.Empty;
+
+    private async Task Connect()
+    {
+        hubConenction = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .Build();
+        hubConenction.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var msg = $"{(string.IsNullOrEmpty(user) ? "" : user + ": ")} {message}";
+            messages += msg + "\n";
+            StateHasChanged();
+        });
+        await hubConenction.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if(hubConenction != null)
+        {
+            await hubConenction.SendAsync("AddMessageToChat", username, message);
+            message = string.Empty;
+        }
+    }
+    public bool IsConnected => hubConenction?.State == HubConnectionState.Connected;
+    public async ValueTask DisposeAsync()
+    {
+        if(hubConenction != null)
+        {
+            await hubConenction.DisposeAsync();
+        }
+    }
+}
